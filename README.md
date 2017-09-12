@@ -23,15 +23,20 @@ Modify date and/or time of file, directory or symlink, recursively (for Windows)
         - (mostly) case insensitive, -a is identical with /A
         - may be a toggle (switch) or may need additional argument
         - the later argument overrides or _toggles_ the previous one
+          the switch turned off the second time you typed it in as argument
+          thus a switch can be turned on and off, and on and off and on..
 
         Options/switches are:
         -a, -m    change a:access or m:modification time (default: both)
+        -x        change creation time (Not too useful as you might think,
+                  all apps and file operations use m:modification time)
         -c        DO create file if not exist (disables r:recursive)
         -d DATE   translate date string (see formats below)
         -e, -f    process only e:DIRS or f:FILES, or both (default)
         -h or -l  process SYMLINK/reparse point itself, not linked file
         -n        test-mode, do not do actual modification
         -o, -q    show o:options/arguments or q:quiet (unless error)
+        -Q        be very quiet while processing files, don't show error
         -r FILE   get reference datetime from file/dir: FILE
         -s        recursive. process subdirs (disables c:create)
         -t STAMP  use time in format [[[CC]YY]MMDD]hhmm[.ss]
