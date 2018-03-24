@@ -59,11 +59,11 @@ Modify date and/or time of file, directory or symlink, recursively (for Windows)
 
     Return code:
         number of files successfully processed set in ERRORLEVEL
-
+    
 
 Clarification about recursive option against sub directory:
 
-The <code>recursive switch: -s</code> should have been denoted by <code>-r</code>, unfortunaltely it has been taken as <i>reference</i> in <code>POSIX touch</code>. Option/switch <code>-s</code> <b>is not used to specify target directory</b>. 
+The <code>recursive switch: -s</code> should have been denoted by <code>-r</code>, unfortunaltely it has been taken as <i>reference</i> in <code>POSIX touch</code>. Option/switch <code>-s</code> <b>is not used to specify target directory</b>. The program always operates in current directory.
 
 Option recursive against subdir: <code>-s DIRNAMES...</code> will match all occurences of <code>DIRNAMES</code> recursively in <b>current directory</b>, <b>not</b> ALL files/dirs under subdirs <code>DIRNAMES</code>.
 
