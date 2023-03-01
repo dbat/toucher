@@ -1,12 +1,12 @@
 # toucher
 Modify date and/or time of file, directory or symlink, recursively (for Windows)
 
-    Copyright(C) 2003-2010, PT SOFTINDO Jakarta
-    email: aa _at_ softindo.net
+    Copyright(C) 2003-2019, PT SOFTINDO Jakarta
+    email: gm.dadang _at_ gmail.com
     All rights reserved.
 
-    toucher version: 1.0.3.1, build: 503
-    created: 2003.09.27, last revised: 2016.10.08
+    toucher version: 1.0.4.0, build: 596
+    created: 2003.09.27, last revised: 2018.04.10
 
     Synopsys:
         Modify date and/or time of file, directory or symlink, recursively
@@ -30,19 +30,31 @@ Modify date and/or time of file, directory or symlink, recursively (for Windows)
         -a, -m    change a:access or m:modification time (default: both)
         -x        change creation time (Not too useful as you might think,
                   all apps and file operations use m:modification time)
-        -c        DO create file if not exist (disables r:recursive)
+        -c        DO create file if not exist (disables s:recursive)
         -d DATE   translate date string (see formats below)
         -e, -f    process only e:DIRS or f:FILES, or both (default)
-        -h or -l  process SYMLINK/reparse point itself, not linked file
+        -h or -l  process SYMLINKS/reparse points, not the real files
         -n        test-mode, do not do actual modification
         -o, -q    show o:options/arguments or q:quiet (unless error)
         -Q        be very quiet while processing files, don't show error
         -r FILE   get reference datetime from file/dir: FILE
+                  (honestly, this switch should have meant recursive)
         -s        recursive. process subdirs (disables c:create)
-        -t STAMP  use time in format [[[CC]YY]MMDD]hhmm[.ss]
+        -S        use depth-first traversal on recursive operation
+        -t CTIME  use time in format [[[CC]YY]MMDD]hhmm[.ss]
+        -u uSTAMP lowercase u, use UNIX timestamp (seconds since 1970)
+        -U mSTAMP UPPERCASE U, use MS/Excel timestamp (seconds since 1600)
+                  *STAMP can be prefixed by 0x for hex digits or 0 for octal
+                  tbh, I don't think anybody ever use octal anymore
         -v        show version
         -y, -z    set only y:DATE or z:TIME, or both (default)
-        --   stop parsing the next remaining arguments as opts/switches
+        --        stop parsing next remaining arguments as opts/switches
+
+        -?1909++  this help
+
+        ->        modify all_time_fields (access, create, mod.) at once
+        -= a|c|m  use a:access c:creation m:modification time from the
+                  target file itself (overrides -d and -t, obviously)
 
         DATETIME formats:
         (note that delimiter is _important_ for date/month/year order)
@@ -52,13 +64,14 @@ Modify date and/or time of file, directory or symlink, recursively (for Windows)
             - 2 digits year: 1938 - 2037 (32 bits UNIX last epoch)
             - "DATE + TIME" must be delimited by exactly 1 space/tab
 
-        TIMESTAMP fields:
+        CTIME fields:
            CC YY MMDD hhmm .ss
            - required fields: hhmm
            - unspecified fields will be set equal to current time
 
-    Return code:
+     Return code:
         number of files successfully processed set in ERRORLEVEL
+
     
 
 Clarification about recursive option against sub directory:
