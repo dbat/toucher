@@ -30,6 +30,7 @@
 #define DEBUG
 #endif
 
+// can not be compiled by bcc, use vc instead
 
 #ifdef DEBUG
 #define DEBUG1 1
@@ -75,7 +76,7 @@ TCHAR *StartDir; //
 
 #define STRLEN	_tcslen
 #ifdef IDE
-#define ITOA(n, s, r)	_itot_s(n, s, 11, r) 
+#define ITOA(n, s, r)	_itot_s(n, s, 11, r)
 #define STRCPY(dst, src)		_tcscpy_s(dst, STRLEN(src) + 1, src)
 #define STRNCPY(dst, src, n)	_tcsncpy_s(dst, n + 1, src, n)
 #else
@@ -89,6 +90,7 @@ TCHAR *StartDir; //
 #define STRCSPN	_tcscspn
 #define STRCAT	_tcscat
 #define ATOI	_tstoi
+//#define ATOI64	_tstoi64
 #define TOLOWER	_totlower
 #define ISDIGIT	_istdigit
 
@@ -116,8 +118,9 @@ TCHAR *StartDir; //
 #define PRINTF2p(s, p, q) printf(_T(s), p, q)
 #define PRINTF3p(s, p, q, r) printf(_T(s), p, q, r)
 
-TCHAR * _getFilename(TCHAR * args0) {
-	TCHAR *p, *s = args0;
+
+TCHAR * _getBasename(TCHAR * arg0) {
+	TCHAR *p, *s = arg0;
 	p = s;
 	while((*p) && ((*p) != _T('\\'))) p++;
 	while((*p)) {
@@ -127,12 +130,13 @@ TCHAR * _getFilename(TCHAR * args0) {
 	return s;
 }
 
-IDSTR(version_number,	"1.0.3.1");
+IDSTR(version_number,	"1.0.4.0");
 //IDSTR(version_build,	"35");
-int version_build = 503;
+int version_build = 596;
 IDSTR(version_progname,	"toucher");
 IDSTR(version_created,	"2003.09.27");
-IDSTR(version_revised,	"2016.10.08");
+//IDSTR(version_revised,	"2016.10.08");
+IDSTR(version_revised,	"2018.04.10");
 
 IDSTR(SEConvert,	"Conversion Error %s %s");
 IDSTR(SCFileTime,	"Filetime");
@@ -208,7 +212,7 @@ int _shower2(_TCHAR *msg1, TCHAR * msg2) { return _showLastErrNULL(msg1, msg2, N
 //	return _showLastErrNULL(msg, sn, NULL);
 //}
 
-#define OPTERR_UNKNOWN    -1
+#define OPTERR_UNKNOWN       -1
 
 #define DTERR_INV_PATHNAME   -3
 #define DTERR_OUTRANGECHAR   -5
@@ -295,7 +299,7 @@ int __showERR(DWORD err, TCHAR* msg, int n) {
 
 	p = NULL; pre = Invalid;
 	switch (err) {
-			case DTERR_INV_PATHNAME       : p = Path       ; break;
+			case DTERR_INV_PATHNAME   : p = Path       ; break;
 			case DTERR_OUTRANGECHAR   : p = OutrChar   ; break;
 			case DTERR_INV_DATETIME   : p = Datetime   ; break;
 			case DTERR_INV_DATE       : p = Date       ; break;
@@ -323,12 +327,12 @@ int __showERR(DWORD err, TCHAR* msg, int n) {
 	}
 	else {
 		switch (err) {
-				case CVTERR_FTIME2SYS: p1 = Filetime  , p2 = Systime; break;
-				case CVTERR_FTIME2LOC: p1 = Filetime  , p2 = LocalFtime; break;
-				case CVTERR_SYS2FTIME: p1 = Systime   , p2 = Filetime; break;
-				case CVTERR_LOC2FTIME: p1 = LocalFtime, p2 = Filetime; break;
-				case CVTERR_LOC2UTIME: p1 = Localtime,  p2 = Systime; break;
-				default: { printf(UnknownError, "\n"); return 0; }
+			case CVTERR_FTIME2SYS: p1 = Filetime  , p2 = Systime; break;
+			case CVTERR_FTIME2LOC: p1 = Filetime  , p2 = LocalFtime; break;
+			case CVTERR_SYS2FTIME: p1 = Systime   , p2 = Filetime; break;
+			case CVTERR_LOC2FTIME: p1 = LocalFtime, p2 = Filetime; break;
+			case CVTERR_LOC2UTIME: p1 = Localtime,  p2 = Systime; break;
+			default: { printf(UnknownError, "\n"); return 0; }
 		}
 		printf(tpl_Convert, e, CantConvert, p1, p2);
 	}
@@ -409,6 +413,9 @@ void _printimei64(__int64 n, bool CR) {
 //#define fttoi64(ft, L, ret) \
 //	{ L.LowPart = ft.dwLowDateTime; L.HighPart = ft.dwHighDateTime; ret = L.QuadPart; }
 
+#define int64ToFT(i64, ft) \
+	{ ft.dwLowDateTime = i64; ft.dwHighDateTime = i64 >> 32; }
+
 #define int64OfFT(ft) (((__int64)ft.dwHighDateTime << 32) | ft.dwLowDateTime)
 
 #define DAYTICKS 864000000000
@@ -473,7 +480,7 @@ __int64 _getLocalDiff() {
 #define _cZrO	'0'
 #define _cOnE	'1'
 #define _cSiX	'6'
-#define _cNnE	'9'
+#define _cNiN	'9'
 #define _cVeE	'v'
 
 //@me wants uppercase! ok, sure- nobody denied your privileges
@@ -499,14 +506,14 @@ __int64 _getLocalDiff() {
 #define tZro	_T(_cZrO)
 #define tOne	_T(_cOnE)
 #define tSix	_T(_cSiX)
-#define tNne	_T(_cNnE)
+#define tNin	_T(_cNiN)
 #define tVee	_T(_cVeE)
 
 #define tTAB	_T(cTAB)
 #define tSPC	_T(cSPC)
 
 
-#define ctOutrangeOfInt(A, i) ((A[i] < tZro) || (A[i] > tNne))
+#define ctOutrangeOfInt(A, i) ((A[i] < tZro) || (A[i] > tNin))
 #define toIntCheck2sav(A, i, var, tmp) \
 	if ctOutrangeOfInt(A, i) return OUTRCHAR(&A[i]); \
 	if ctOutrangeOfInt(A, (i+1)) return OUTRCHAR(&A[i+1]); \
@@ -514,7 +521,104 @@ __int64 _getLocalDiff() {
 
 #define toIntCheckDot(var, i) toIntCheck2sav(dot, i, var, dx)
 
+__int64 ATOI64(const char *s) {
+    __int64 ret = 0;
+	int n, c = 0;
+
+	while ((c = *s++) != '\0') {
+		if (c >= '0' && c <= '9') n = (c - '0');
+		else break;
+		ret *= 10;
+		ret += (__int64)n;
+    }
+    return ret;
+}
+
+//#define isdghex(k) (((k >= '0') && (k <= '9')) || ((k >= 'a') && (k <= 'f')))
+//#define isnotdghex(k) (((k < '0') || (k > '9')) && ((k < 'a') || (k > 'f')))
+__int64 STRTOI64(const char *digits, char **endptr) { // , int base) {
+	const char *s;
+ 	__int64 N, ret;
+	int neg, flag, base = 0;
+	char c;
+
+	s = digits;
+	do { c = *s++; } while (c == ' ' || c == '\t');
+	if (c == '-')
+		{ neg = 1; c = *s++; }
+	else
+		{ neg = 0; if (c == '+') c = *s++; }
+
+	if (c == '0' && (*s == 'x' || *s == 'X'))
+		{ c = s[1]; s += 2; base = 16; }
+	else base = c == '0' ? 8 : 10;
+	ret = flag = 0;
+
+	N = 0;
+	for (;;c = *s++) {
+		c |= 0x20; //if isnotdghex(c) break;
+		c -= '0';
+		if (c < 0) break;
+		if (c > 9) c -= '0' - 9;
+		if (c < 0 || c >= base) break;
+		N *= base;
+		if(
+			(flag < 0)
+				|| (neg && (N > ret || (N -= c) > ret)) /* underflow */
+				|| (N < ret || (N += c) < ret)          /* overflow */
+			)
+			{ flag = -1; break; }
+		else
+			{ ret = N; flag = 1; }
+	}
+
+	if (flag < 0)
+		ret = neg ? 0x80000000LL : 0x7fffffffLL;
+
+	if (endptr != NULL)
+		*endptr = (char *)(flag ? s - 1 : digits);
+
+	return (ret);
+}
+
+__int64 parseTimeEpoch(TCHAR * ts, int c) {
+#define MAX_USTAMP (0x7fffffffffffffffULL / 10000000ULL)
+#define MAX_XSTAMP (0x7fffffffffffffffULL / 10000000ULL - 11644473600ULL)
+//9223372036854775807/10000000-11644473600 // 1year = 31,536,000 seconds
+	__int64 ret = 0; //__time64_t stamp;
+	FILETIME ft; SYSTEMTIME lt, ut; //ULARGE_INTEGER u;
+	TIME_ZONE_INFORMATION tz;
+
+	if (!(ts && c)) return ret;
+	if ((*ts==tHyp) /* || (*ts==tZro)*/ ) return 0;
+
+	//ret = ATOI64(ts);
+	//test 0x5EC1C965
+	ret = STRTOI64(ts, NULL);
+	//printf("ret = %I64d %I64X\n", ret, ret);
+	if ((ret <= 0) || (ret > MAX_USTAMP)) return 0;
+
+	if (c == _T('u')) {
+		if (ret > MAX_XSTAMP) return 0;
+		ret += 11644473600ULL;
+	}
+
+	ret *= (__int64)10000000ULL;
+	int64ToFT(ret, ft)
+
+	GetTimeZoneInformation(&tz);
+	if(!FileTimeToSystemTime(&ft, &lt)) return CVTERR(CVTERR_FTIME2SYS);
+	if(!TzSpecificLocalTimeToSystemTime(&tz, &lt, &ut)) return CVTERR(CVTERR_LOC2UTIME);
+	if(!SystemTimeToFileTime(&ut, &ft)) return CVTERR(CVTERR_SYS2FTIME);
+
+	ret = int64OfFT(ft);
+	return ret;
+}
+
 //============================================================
+// FILETIME Contains a 64-bit value representing the number
+// of 100-nanosecond intervals since January 1, 1601 (UTC).
+
 __int64 parseTimeStamp(TCHAR * ts) {
 	// valid format
 	//   15c CCYYMMDDHHmm.ss    12c CCYYMMDDHHmm
@@ -552,8 +656,8 @@ __int64 parseTimeStamp(TCHAR * ts) {
 
 	if (len > 12) return DTERR1n(DTERR_INV_LENGTH, len);
 
-	for (i = 0; i < len; i++) 
-		if ((ts[i] < tZro) || (ts[i] > tNne))
+	for (i = 0; i < len; i++)
+		if ((ts[i] < tZro) || (ts[i] > tNin))
 			return OUTRCHAR(&ts[i]);
 
 	dot = ts + len - 12;
@@ -1164,7 +1268,7 @@ int recurse(TCHAR *fpn, FILETIME *ft, DWORD opts) {
 			len = STRLEN(dfn); // get new/found data.filename length
 			STRCPY(cp, dfn);   // replace glob with data.filename
 			cp[len] = tNul;    // add trailing backslash
-			if NOT_QUIET 
+			if NOT_QUIET
 				PRINTF1p("\nDIVING subdir: %s\n", cPATH);
 			cp[len] = tBsl;    // add trailing backslash
 			STRCPY(cp + len + 1, cf); // append original filename
@@ -1310,7 +1414,7 @@ int seek(TCHAR *fn, FILETIME *ftime, DWORD opts) {
 
 #define FULLPATH _tfullpath BAAD!
 
-int _help(TCHAR *args0, TCHAR *msg) {
+int _help(TCHAR *arg0, TCHAR *msg) {
 	SYSTEMTIME st;
 	int i, k = 190900, len;
 	int bday = 19091969;
@@ -1322,10 +1426,10 @@ int _help(TCHAR *args0, TCHAR *msg) {
 	ch = TOLOWER(msg[1]);
 	if (ch != tVee && ch != tQst) return 0;
 	//char * bar = "============================================";
-	fn = _getFilename(args0);
+	fn = _getBasename(arg0);
 	PRINTF00("\n");
-	PRINTF00("  Copyright(C) 2003-2010, PT SOFTINDO Jakarta\n");
-	PRINTF00("  email: aa _at_ softindo.net\n");
+	PRINTF00("  Copyright(C) 2003-2019, PT SOFTINDO Jakarta\n");
+	PRINTF00("  email: gm.dadang _at_ gmail.com\n");
 	PRINTF00("  All rights reserved.\n"); //PRINTF00("\n");
 	PRINTF00("\n");
 	PRINTF3p("  %s version: %s, build: %0.3d\n", version_progname, version_number, version_build);
@@ -1362,7 +1466,7 @@ int _help(TCHAR *args0, TCHAR *msg) {
 	PRINTF00("\t-a, -m\t  change a:access or m:modification time (default: both)\n");
 	if (ext)
 		PRINTF1p("\t-%c\t  change creation time (Not too useful as you might think,\n\t\t  all apps and file operations use m:modification time)\n", _T('x'));
-	PRINTF00("\t-c\t  DO create file if not exist (disables r:recursive)\n");
+	PRINTF00("\t-c\t  DO create file if not exist (disables s:recursive)\n");
 	PRINTF00("\t-d DATE   translate date string (see formats below) \n");
 	PRINTF00("\t-e, -f\t  process only e:DIRS or f:FILES, or both (default)\n");
 	PRINTF00("\t-h or -l  process SYMLINKS/reparse points, not the real files\n");
@@ -1373,26 +1477,39 @@ int _help(TCHAR *args0, TCHAR *msg) {
 	//PRINTF00("\t-q\t  quiet\n"); //, will shut up the previous -o\n");// (better be first before other switches)\n");
 	PRINTF00("\t-r FILE   get reference datetime from file/dir: FILE\n");
 	if (ext && (msg[6] == tPls))
-		PRINTF00("\t\t  (honestly, this switch should meant recursive)\n");
+		PRINTF00("\t\t  (honestly, this switch should have meant recursive)\n");
 	PRINTF00("\t-s\t  recursive. process subdirs (disables c:create)\n");
 	if (ext && (msg[6] == tPls))
 		PRINTF00("\t-S\t  use depth-first traversal on recursive operation\n");
-	PRINTF00("\t-t STAMP  use time in format [[[CC]YY]MMDD]hhmm[.ss]\n");
+	PRINTF00("\t-t CTIME  use time in format [[[CC]YY]MMDD]hhmm[.ss]\n");
+	//if (ext && (msg[6] == tPls))
+	//	PRINTF00("\t-u\t  UNDO the devastating incorrect result in your life\n\t\t  (not implemented yet)\n");
+	PRINTF00("\t-u uSTAMP lowercase u, use UNIX timestamp (seconds since 1970)\n");
 	if (ext && (msg[6] == tPls))
-		PRINTF00("\t-u\t  UNDO the devastating incorrect result in your life\n\t\t  (not implemented yet)\n");
+		PRINTF00("\t-U mSTAMP UPPERCASE U, use MS/Excel timestamp (seconds since 1600)\n");
+	if (ext)
+		PRINTF00("\t\t  *STAMP can be prefixed by 0x for hex digits or 0 for octal\n");
+	if (ext && (msg[6] == tPls))
+		PRINTF00("\t\t  tbh, I don't think anybody ever use octal anymore\n");
 	PRINTF00("\t-v\t  show version\n");
 	PRINTF00("\t-y, -z\t  set only y:DATE or z:TIME, or both (default)\n");
-	PRINTF00("\t--   stop parsing the next remaining arguments as opts/switches\n");
+	PRINTF00("\t--	  stop parsing next remaining arguments as opts/switches\n");
 	if (ext) {
 		PRINTF00("\n");
 		printf(_T("\t%s%s  this help\n"), msg, strlen(msg) > 7 ? _T("") : _T("\t") );
 		GetLocalTime(&st);
+	}
+	else {
+		//PRINTF00("\n");
+		printf(_T("\t-?\t  %s\n"), "Help. Checkout for 1909 pp" );
 	}
 	if (ext2) {
 		srand((unsigned int)time(NULL));
 		for (i = 0; i < (rand() & 7); i++) rand();
 		if (((st.wHour > 3) && (st.wHour < 23)) || (st.wMonth == 7 && st.wDay == 4)) us = sBlank;
 		else if(rand() > (1 << 13)) us = sBlank; //printf("%.08X", k);
+
+		PRINTF00("\n");
 		PRINTF1p("\t-%c\t  modify all_time_fields (access, create, mod.) at once\n", tGrt);
 		PRINTF1p("\t-%c a|c|m  use a:access c:creation m:modification time from the\n\t\t  target file itself (overrides -d and -t, obviously)\n", tEqu);
 		//PRINTF1p("\t\t  (mutually exclussive / overrides -t and -d)\n", tEqu);
@@ -1406,7 +1523,7 @@ int _help(TCHAR *args0, TCHAR *msg) {
 	PRINTF2p("\t    - 2 digits year: %d - %d (32 bits UNIX last epoch)\n", 1900 + CENTURY_SHIFT + 1, 2000 + CENTURY_SHIFT);
 	PRINTF00("\t    - \"DATE + TIME\" must be delimited by exactly 1 space/tab\n");
 	PRINTF00("\n");
-	PRINTF00("\tTIMESTAMP fields:\n");
+	PRINTF00("\tCTIME fields:\n");
 	PRINTF00("\t   CC YY MMDD hhmm .ss\n");
 	PRINTF00("\t   - required fields: hhmm\n");
 	PRINTF00("\t   - unspecified fields will be set equal to current time\n");
@@ -1499,7 +1616,7 @@ __int64 getRefFileDate(TCHAR * fn, DWORD opts) {
 	if HANDLE_ISBAD(fh)
 		return NOT_VERYQUIET & _shower2(_T("Failed to get refDate from: "), fn);
 
-	//if(GetFileInformationByHandle (fh, &info)) 
+	//if(GetFileInformationByHandle (fh, &info))
 	//	ret = int64OfFT(info.ftLastWriteTime);
 #ifdef DEBUG3
 	if(!GetFileTime(fh, &ftC, &ftA, &ft))
@@ -1508,7 +1625,7 @@ __int64 getRefFileDate(TCHAR * fn, DWORD opts) {
 #endif
 		return NOT_VERYQUIET & _shower2(_T("Failed to get refDate from: "), fn);
 	CloseHandle(fh);
-	
+
 	ret = int64OfFT(ft);
 
 #ifdef DEBUG3
@@ -1552,7 +1669,7 @@ int main(int argn, TCHAR * args[]) {
 	TIME2SET = u.QuadPart;
 
 	got = -1; // use current time
-	while ((c = getoptn(argn, args, _T(">acd:efhlmnoqr:st:uvxyz=:ACD:EFHLMNOQR:ST:UVXYZ"))) != -1) {
+	while ((c = getoptn(argn, args, _T(">acd:efhlmnoqr:st:u:vxyz=:ACD:EFHLMNOQR:ST:U:VXYZ"))) != -1) {
 		ch = args[optind-1][1];
 		switch (TOLOWER(c)) {
 			case _T('a'): opwr ^= OPT_ATIME; break;
@@ -1572,6 +1689,7 @@ int main(int argn, TCHAR * args[]) {
 				}
 				break;
 			case _T('t'): got = parseTimeStamp(optarg); break;
+			case _T('u'): got = parseTimeEpoch(optarg, c); break;
 			case _T('d'): got = parseDateTime(optarg); break;
 			case _T('l'):
 			case _T('h'): opts ^= OPT_LINKS; break;
